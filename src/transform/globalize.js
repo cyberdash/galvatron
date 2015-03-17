@@ -1,11 +1,10 @@
 'use strict';
 
+var convert = require('convert-source-map');
 var crypto = require('crypto');
-var fs = require('fs');
 var path = require('path');
 
 var prefix = '__';
-var regexSourcemap = /\n*\s*\/\/.?\s*sourceMappingURL=(.*)/m;
 var regexUseStrict = /\n*\s*['"]use strict['"];?\s*/gm;
 
 function hash (str) {
@@ -35,11 +34,12 @@ function makePathRelative (file) {
 
 module.exports = function () {
   return function (data, info) {
-    var sourcemap = data.match(regexSourcemap);
-    sourcemap = sourcemap && sourcemap[1];
+    var sm = convert.fromSource(data);
 
-    if (sourcemap) {
-      data = data.replace(regexSourcemap, '');
+    if (sm) {
+      sm.setProperty('file', path.basename(info.path));
+      data = convert.removeComments(data);
+      console.log(sm);
     }
 
     info.imports.forEach(function (imp, index) {
