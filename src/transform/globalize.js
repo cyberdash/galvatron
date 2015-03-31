@@ -50,6 +50,13 @@ function defineReplacement (name, deps, func) {
 
   func = [func, deps, name].filter(function (cur) { return typeof cur === 'function'; })[0];
   deps = [deps, name, []].filter(Array.isArray)[0];
+
+  var allDependenciesMatched = deps.every(function (value) { return defineDependencies[value] !== undefined; });
+  if (!allDependenciesMatched) {
+    originalDefine.apply(this, arguments);
+    return;
+  }
+
   rval = func.apply(null, deps.map(function (value) { return defineDependencies[value]; }));
   type = typeof rval;
 
@@ -92,8 +99,8 @@ module.exports = function () {
     shims.push('var exports = module.exports;');
 
     // We only need to generate the AMD -> CommonJS shim if it's used.
-    var thereAreMatchedImports = info.imports.length;
-    if (isAmd && thereAreMatchedImports) {
+    if (isAmd) {
+      shims.push('var originalDefine = window.define;');
       shims.push('var defineDependencies = ' + defineDependencies(info.imports) + ';');
       shims.push('var define = ' + defineReplacement + ';');
       shims.push('define.amd = true;');
