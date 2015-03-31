@@ -92,7 +92,8 @@ module.exports = function () {
     shims.push('var exports = module.exports;');
 
     // We only need to generate the AMD -> CommonJS shim if it's used.
-    if (isAmd) {
+    var thereAreMatchedImports = info.imports.length;
+    if (isAmd && thereAreMatchedImports) {
       shims.push('var defineDependencies = ' + defineDependencies(info.imports) + ';');
       shims.push('var define = ' + defineReplacement + ';');
       shims.push('define.amd = true;');
