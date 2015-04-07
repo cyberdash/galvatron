@@ -51,8 +51,12 @@ function defineReplacement (name, deps, func) {
   func = [func, deps, name].filter(function (cur) { return typeof cur === 'function'; })[0];
   deps = [deps, name, []].filter(Array.isArray)[0];
 
-  var allDependenciesMatched = deps.every(function (value) { return defineDependencies[value] !== undefined; });
-  if (!allDependenciesMatched) {
+  var allDependenciesDefined = deps.every(function (dep) {
+    return defineDependencies.hasOwnProperty(dep);
+  });
+
+  var hasExternalDependency = !allDependenciesDefined;
+  if (hasExternalDependency) {
     originalDefine.apply(this, arguments);
     return;
   }
